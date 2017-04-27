@@ -61,6 +61,10 @@ gem 'twitter-text', '~> 1.14'
 gem 'tzinfo-data', '~> 1.2017'
 gem 'webpacker', '~> 1.2'
 
+# urvogel
+gem 'twitter'
+gem 'oauth'
+
 group :development, :test do
   gem 'fabrication', '~> 2.16'
   gem 'fuubar', '~> 2.2'
