@@ -66,6 +66,12 @@ Rails.application.routes.draw do
     end
 
     resource :follower_domains, only: [:show, :update]
+
+    resources :twitter_accounts do
+      collection do
+        get :oauth
+      end
+    end
   end
 
   resources :media, only: [:show]

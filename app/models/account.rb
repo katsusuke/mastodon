@@ -69,6 +69,9 @@ class Account < ApplicationRecord
   has_many :mentions, inverse_of: :account, dependent: :destroy
   has_many :notifications, inverse_of: :account, dependent: :destroy
 
+  # Twitter
+  has_many :twitter_accounts, dependent: :destroy
+
   # Media
   has_many :media_attachments, dependent: :destroy
 

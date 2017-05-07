@@ -288,7 +288,7 @@ ActiveRecord::Schema.define(version: 20170609145826) do
 
   create_table "statuses_tags", id: false, force: :cascade do |t|
     t.bigint "status_id", null: false
-    t.integer "tag_id", null: false
+    t.bigint "tag_id", null: false
     t.index ["status_id"], name: "index_statuses_tags_on_status_id"
     t.index ["tag_id", "status_id"], name: "index_statuses_tags_on_tag_id_and_status_id", unique: true
   end
@@ -322,6 +322,17 @@ ActiveRecord::Schema.define(version: 20170609145826) do
     t.datetime "updated_at", null: false
     t.index "name text_pattern_ops", name: "hashtag_search_index"
     t.index ["name"], name: "index_tags_on_name", unique: true
+  end
+
+  create_table "twitter_accounts", id: :serial, force: :cascade do |t|
+    t.integer "account_id"
+    t.string "name"
+    t.string "access_token"
+    t.string "access_token_secret"
+    t.datetime "last_updated_at", default: -> { "now()" }, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_twitter_accounts_on_account_id"
   end
 
   create_table "users", id: :serial, force: :cascade do |t|
@@ -403,6 +414,7 @@ ActiveRecord::Schema.define(version: 20170609145826) do
   add_foreign_key "statuses_tags", "tags", on_delete: :cascade
   add_foreign_key "stream_entries", "accounts", on_delete: :cascade
   add_foreign_key "subscriptions", "accounts", on_delete: :cascade
+  add_foreign_key "twitter_accounts", "accounts"
   add_foreign_key "users", "accounts", on_delete: :cascade
   add_foreign_key "web_settings", "users", on_delete: :cascade
 end

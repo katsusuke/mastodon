@@ -1,0 +1,15 @@
+- content_for :page_title do
+  = t('twitter.settings.accounts')
+
+%table
+  %thead
+    %tr
+      %th Account name
+  %tbody
+    - @twitter_accounts.each do |account|
+      %tr
+        %td= account.name
+        %td= link_to 'Delete', settings_twitter_account_path(account), method: :delete, data: { confirm: 'Are you sure' }
+
+%p
+  = link_to 'New', new_settings_twitter_account_path
