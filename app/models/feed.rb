@@ -19,7 +19,7 @@ class Feed
 
             account = Account.find_or_create_by(domain: 'twitter.com', username: user.screen_name) do |a|
               a.display_name = user.name
-              a.note = user.description || ' '
+              a.note = user.description.is_a?(Twitter::NullObject) ? '' : user.description
               a.url = "https://twitter.com/#{user.screen_name}"
               a.avatar_remote_url = user.profile_image_uri_https(:bigger).to_s
             end
