@@ -28,7 +28,8 @@ module Settings
       session[:access_token_secret] = access_token.secret
 
       @ta = @account.twitter_accounts.new(access_token: access_token.token,
-                                          access_token_secret: access_token.secret)
+                                          access_token_secret: access_token.secret,
+                                          last_updated_at: Time.zone.now - 1.day)
       @ta.assign_name
       @ta.save
       redirect_to settings_twitter_accounts_path
