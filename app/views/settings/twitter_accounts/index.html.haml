@@ -11,5 +11,6 @@
         %td= account.name
         %td= link_to 'Delete', settings_twitter_account_path(account), method: :delete, data: { confirm: 'Are you sure' }
 
-%p
-  = link_to 'New', new_settings_twitter_account_path
+- if @twitter_accounts.blank?
+  %p
+    = link_to 'New', new_settings_twitter_account_path
