@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+class CommandError < StandardError; end
+
+CONFIG = {
+  machine: 'urvogel.club'
+}
+
+def sys(command)
+  puts("> #{command}")
+  s = system(command)
+  raise CommandError, command unless s
+  s
+end
+
+def ssh(command)
+  sys "ssh urvogel.club 'cd /var/urvogel/mastodon && #{command}'"
+end
+
+begin
+  sys 'docker-machine --version'
+
+  unless `docker-machine active`.lines.first.chomp == CONFIG[:machine]
+    abort "active machine is not #{CONFIG[:machine]}"
+  end
+
+  sys 'RAILS_ENV=production bundle install --path vendor/bundle --binstubs=vendor/bin'
+  sys 'bin/yarn'
+  sys 'RAILS_ENV=production bundle exec rake assets:precompile assets:clean'
+
+  puts 'build mastodon...'
+  unless `docker ps|grep httpspotal_https-portal_1`.strip.empty?
+    sys 'docker kill httpspotal_https-portal_1'
+  end
+  ssh 'docker-compose down'
+  ssh 'git fetch --prune'
+  ssh 'git reset --hard origin/master'
+  ssh 'docker-compose build'
+  ssh 'docker-compose run --rm web rake db:migrate'
+
+  ssh 'sudo rm -rf public/packs'
+  ssh 'sudo rm -rf public/assets'
+  sys 'scp -r public/packs urvogel.club:/var/urvogel/mastodon/public'
+  sys 'scp -r public/assets urvogel.club:/var/urvogel/mastodon/public'
+  ssh 'docker-compose up -d'
+
+  puts 'wait for rails'
+  sleep 2 until system 'docker exec -t mastodon_web_1 test -f tmp/pids/server.pid'
+  sleep 30
+
+  puts 'restart nginx...'
+  sys 'docker start httpspotal_https-portal_1'
+  sys 'docker kill -s HUP mastodon_nginx_1'
+
+  puts 'finished.'
+rescue => e
+  puts "error #{e}"
+  exit 1
+end
