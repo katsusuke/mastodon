@@ -33,6 +33,7 @@ begin
     sys 'docker kill httpspotal_https-portal_1'
   end
   ssh 'docker-compose down'
+  sys "scp urvogel.club:/var/urvogel/mastodon/redis/dump.rdb tmp/backups/dump_$(date '+%Y%m%d%H%M%S').rdb"
   ssh 'git fetch --prune'
   ssh 'git reset --hard origin/master'
   ssh 'docker-compose build'
