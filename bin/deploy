@@ -23,7 +23,6 @@ begin
     abort "active machine is not #{CONFIG[:machine]}"
   end
 
-  sys "docker exec -ti mastodon_db_1 pg_dump -U postgres -d mastodon_production -Fc > tmp/backups/mastodon_$(date '+%Y%m%d%H%M%S').custom"
   sys 'RAILS_ENV=production bundle install --path vendor/bundle --binstubs=vendor/bin'
   sys 'bin/yarn'
   sys 'RAILS_ENV=production bundle exec rake assets:precompile assets:clean'
@@ -32,6 +31,7 @@ begin
   unless `docker ps|grep httpspotal_https-portal_1`.strip.empty?
     sys 'docker kill httpspotal_https-portal_1'
   end
+  sys "docker exec -ti mastodon_db_1 pg_dump -U postgres -d mastodon_production -Fc > tmp/backups/mastodon_$(date '+%Y%m%d%H%M%S').custom"
   ssh 'docker-compose down'
   sys "scp urvogel.club:/var/urvogel/mastodon/redis/dump.rdb tmp/backups/dump_$(date '+%Y%m%d%H%M%S').rdb"
   ssh 'git fetch --prune'
