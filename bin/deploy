@@ -27,7 +27,6 @@ begin
   sys 'bin/yarn'
   sys 'RAILS_ENV=production bundle exec rake assets:precompile assets:clean'
 
-  puts 'build mastodon...'
   unless `docker ps|grep httpspotal_https-portal_1`.strip.empty?
     sys 'docker kill httpspotal_https-portal_1'
   end
@@ -36,7 +35,8 @@ begin
   sys "scp urvogel.club:/var/urvogel/mastodon/redis/dump.rdb tmp/backups/dump_$(date '+%Y%m%d%H%M%S').rdb"
   ssh 'git fetch --prune'
   ssh 'git reset --hard origin/master'
-  ssh 'docker-compose build'
+  ssh 'docker rmi tootsuite/mastodon'
+  ssh 'docker pull tootsuite/mastodon'
   ssh 'docker-compose run --rm web rake db:migrate'
 
   ssh 'sudo rm -rf public/packs'
