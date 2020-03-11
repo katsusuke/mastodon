@@ -25,7 +25,7 @@ begin
 
   sys 'RAILS_ENV=production bundle install --path vendor/bundle --binstubs=vendor/bin'
   sys 'bin/yarn'
-  sys 'RAILS_ENV=production bundle exec rake assets:precompile assets:clean'
+  sys 'RAILS_ENV=production bundle exec bin/rails assets:precompile assets:clean'
 
   unless `docker ps|grep httpspotal_https-portal_1`.strip.empty?
     sys 'docker kill httpspotal_https-portal_1'
@@ -37,7 +37,7 @@ begin
   ssh 'git reset --hard origin/master'
   ssh 'docker rmi tootsuite/mastodon'
   ssh 'docker pull tootsuite/mastodon'
-  ssh 'docker-compose run --rm web rake db:migrate'
+  ssh 'docker-compose run --rm web bin/rails db:migrate'
 
   ssh 'sudo rm -rf public/packs'
   ssh 'sudo rm -rf public/assets'
@@ -50,8 +50,9 @@ begin
   sleep 30
 
   puts 'restart nginx...'
-  sys 'docker start httpspotal_https-portal_1'
-  sys 'docker kill -s HUP mastodon_nginx_1'
+  ssh 'docker start httpspotal_https-portal_1'
+  ssh 'docker kill -s HUP mastodon_nginx_1'
+  ssh 'docker system prune'
 
   puts 'finished.'
 rescue => e
