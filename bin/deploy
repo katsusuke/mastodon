@@ -2,7 +2,7 @@
 class CommandError < StandardError; end
 
 CONFIG = {
-  machine: 'urvogel.club'
+  machine: 'urvogel.club.v2'
 }
 
 def sys(command)
@@ -13,7 +13,7 @@ def sys(command)
 end
 
 def ssh(command)
-  sys "ssh urvogel.club 'cd /var/urvogel/mastodon && #{command}'"
+  sys "ssh ubuntu@153.126.134.37 'cd /var/urvogel/mastodon && #{command}'"
 end
 
 begin
@@ -30,29 +30,29 @@ begin
   unless `docker ps|grep httpspotal_https-portal_1`.strip.empty?
     sys 'docker kill httpspotal_https-portal_1'
   end
-  sys "docker exec -ti mastodon_db_1 pg_dump -U postgres -d mastodon_production -Fc > tmp/backups/mastodon_$(date '+%Y%m%d%H%M%S').custom"
-  ssh 'docker-compose down'
-  sys "scp urvogel.club:/var/urvogel/mastodon/redis/dump.rdb tmp/backups/dump_$(date '+%Y%m%d%H%M%S').rdb"
+  #sys "sudo docker exec -ti mastodon_db_1 pg_dump -U postgres -d mastodon_production -Fc > tmp/backups/mastodon_$(date '+%Y%m%d%H%M%S').custom"
+  ssh 'sudo docker-compose down'
+  #sys "scp ubuntu@153.126.134.37:/var/urvogel/mastodon/redis/dump.rdb tmp/backups/dump_$(date '+%Y%m%d%H%M%S').rdb"
   ssh 'git fetch --prune'
   ssh 'git reset --hard origin/master'
-  ssh 'docker rmi tootsuite/mastodon'
-  ssh 'docker pull tootsuite/mastodon'
-  ssh 'docker-compose run --rm web bin/rails db:migrate'
+  ssh 'sudo docker rmi tootsuite/mastodon'
+  ssh 'sudo docker pull tootsuite/mastodon'
+  ssh 'sudo docker-compose run --rm web bin/rails db:migrate'
 
-  ssh 'sudo rm -rf public/packs'
-  ssh 'sudo rm -rf public/assets'
-  sys 'scp -r public/packs urvogel.club:/var/urvogel/mastodon/public'
-  sys 'scp -r public/assets urvogel.club:/var/urvogel/mastodon/public'
-  ssh 'docker-compose up -d'
+  ssh 'rm -rf public/packs'
+  ssh 'rm -rf public/assets'
+  sys 'scp -r public/packs ubuntu@153.126.134.37:/var/urvogel/mastodon/public'
+  sys 'scp -r public/assets ubuntu@153.126.134.37:/var/urvogel/mastodon/public'
+  ssh 'sudo docker-compose up -d'
 
   puts 'wait for rails'
   sleep 2 until system 'docker exec -t mastodon_web_1 test -f tmp/pids/server.pid'
   sleep 30
 
   puts 'restart nginx...'
-  ssh 'docker start httpspotal_https-portal_1'
-  ssh 'docker kill -s HUP mastodon_nginx_1'
-  ssh 'docker system prune'
+  ssh 'sudo docker start httpspotal_https-portal_1'
+  ssh 'sudo docker kill -s HUP mastodon_nginx_1'
+  ssh 'sudo docker system prune'
 
   puts 'finished.'
 rescue => e
